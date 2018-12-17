@@ -1,0 +1,809 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: 'Dragonchain - Cloud formation template for boot-strapping new region/account'
+
+Resources:
+
+
+  drgnCustomerVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.1.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: Customer
+
+  dhcpVpcOption:
+    Type: AWS::EC2::VPCDHCPOptionsAssociation
+    Properties:
+      DhcpOptionsId:
+        Ref: dhcpOptions
+      VpcId:
+        Ref: drgnCustomerVpc
+
+  dhcpOptions:
+    Type: AWS::EC2::DHCPOptions
+    Properties:
+      DomainName: us-west-2.compute.internal
+      DomainNameServers:
+        - AmazonProvidedDNS
+
+  egress10:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId:
+        Ref: sgBastionAccess
+      IpProtocol: '-1'
+
+  egress12:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId:
+        Ref: sgStandardWebservice
+      IpProtocol: '-1'
+
+  egress14:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId:
+        Ref: sgCustomerEC2Access
+      IpProtocol: '-1'
+
+  egress4:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId:
+        Ref: sginternalAccess
+      IpProtocol: '-1'
+
+  egress5:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId:
+        Ref: sgAccessFromBastion
+      IpProtocol: '-1'
+
+  egress6:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId:
+        Ref: sgHopperMatchmaker
+      IpProtocol: '-1'
+
+  egress7:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId:
+        Ref: sgAccessFromBastion
+      IpProtocol: '-1'
+
+  egress9:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      GroupId:
+        Ref: sgBastionAccess
+      IpProtocol: '-1'
+
+  drgnEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  ingress11:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 65.154.51.250/32
+      FromPort: 22
+      GroupId:
+        Ref: sgBastionAccess
+      IpProtocol: tcp
+      ToPort: 22
+
+  ingress12:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 73.53.48.87/32
+      FromPort: 22
+      GroupId:
+        Ref: sgBastionAccess
+      IpProtocol: tcp
+      ToPort: 22
+
+  ingress13:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 104.200.129.61/32
+      FromPort: 22
+      GroupId:
+        Ref: sgBastionAccess
+      IpProtocol: tcp
+      ToPort: 22
+
+  ingress14:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 73.225.15.203/32
+      FromPort: 22
+      GroupId:
+        Ref: sgBastionAccess
+      IpProtocol: tcp
+      ToPort: 22
+
+  ingress15:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 65.154.51.250/32
+      FromPort: 22
+      GroupId:
+        Ref: sgBastionAccess
+      IpProtocol: tcp
+      ToPort: 22
+
+  ingress16:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 104.200.129.61/32
+      FromPort: 22
+      GroupId:
+        Ref: sgBastionAccess
+      IpProtocol: tcp
+      ToPort: 22
+
+  ingress17:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 73.53.48.87/32
+      FromPort: 22
+      GroupId:
+        Ref: sgBastionAccess
+      IpProtocol: tcp
+      ToPort: 22
+
+  ingress18:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 184.167.53.32/32
+      FromPort: 22
+      GroupId:
+        Ref: sgBastionAccess
+      IpProtocol: tcp
+      ToPort: 22
+
+  ingress19:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 71.197.180.159/32
+      FromPort: 22
+      GroupId:
+        Ref: sgBastionAccess
+      IpProtocol: tcp
+      ToPort: 22
+
+  ingress20:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 73.254.106.253/32
+      FromPort: 22
+      GroupId:
+        Ref: sgBastionAccess
+      IpProtocol: tcp
+      ToPort: 22
+
+  ingress21:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 73.225.15.203/32
+      FromPort: 22
+      GroupId:
+        Ref: sgBastionAccess
+      IpProtocol: tcp
+      ToPort: 22
+
+  ingress22:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 67.183.170.117/32
+      FromPort: 22
+      GroupId:
+        Ref: sgBastionAccess
+      IpProtocol: tcp
+      ToPort: 22
+
+  ingress26:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      FromPort: 80
+      GroupId:
+        Ref: sgStandardWebservice
+      IpProtocol: tcp
+      ToPort: 80
+
+  ingress27:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      FromPort: 443
+      GroupId:
+        Ref: sgStandardWebservice
+      IpProtocol: tcp
+      ToPort: 443
+
+  ingress29:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 10.0.0.0/8
+      FromPort: 8080
+      GroupId:
+        Ref: sgCustomerEC2Access
+      IpProtocol: tcp
+      ToPort: 8080
+
+  ingress30:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 172.16.0.0/12
+      FromPort: 8080
+      GroupId:
+        Ref: sgCustomerEC2Access
+      IpProtocol: tcp
+      ToPort: 8080
+
+  ingress31:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 192.168.0.0/16
+      FromPort: 8080
+      GroupId:
+        Ref: sgCustomerEC2Access
+      IpProtocol: tcp
+      ToPort: 8080
+
+  ingress4:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 10.0.0.0/8
+      GroupId:
+        Ref: sginternalAccess
+      IpProtocol: '-1'
+
+  ingress5:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 172.16.0.0/12
+      GroupId:
+        Ref: sginternalAccess
+      IpProtocol: '-1'
+
+  ingress6:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 192.168.0.0/16
+      GroupId:
+        Ref: sginternalAccess
+      IpProtocol: '-1'
+
+  ingress7:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 10.0.0.27/32
+      FromPort: 22
+      GroupId:
+        Ref: sgAccessFromBastion
+      IpProtocol: tcp
+      ToPort: 22
+    
+  ingress8:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      FromPort: 5005
+      GroupId:
+        Ref: sgHopperMatchmaker
+      IpProtocol: tcp
+      ToPort: 5005
+
+  ingress9:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 10.1.3.175/32
+      FromPort: 22
+      GroupId:
+        Ref: sgAccessFromBastion
+      IpProtocol: tcp
+      ToPort: 22
+
+  ingress10:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp:
+        Fn::Join:
+          - '/'
+          - - Fn::GetAtt:
+                - drgnBastion
+                - PrivateIp
+            - '32'
+      FromPort: 22
+      GroupId:
+        Ref: sgAccessFromBastion
+      IpProtocol: tcp
+      ToPort: 22
+  
+  sgAccessFromBastion:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Customer VPC SSH From Bastion
+      Tags:
+      - Key: Name
+        Value: Customer AccessFromBastion
+      VpcId:
+        Ref: drgnCustomerVpc
+
+  sgBastionAccess:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Customer VPC bastion access
+      Tags:
+      - Key: Name
+        Value: Bastion Access Customer
+      VpcId:
+        Ref: drgnCustomerVpc
+
+  sgCustomerEC2Access:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow access to Flask webserver from chain Lambdas
+      Tags:
+      - Key: Name
+        Value: CustomerEC2Access
+      VpcId:
+        Ref: drgnCustomerVpc
+  
+  sgHopperMatchmaker:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow anything to talk to the matchmaker api
+      Tags:
+      - Key: Name
+        Value: Hopper-Api Matchmaker
+      VpcId:
+        Ref: drgnCustomerVpc
+
+  sgStandardWebservice:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow all ports 80 and 443 for a standard webservice
+      Tags:
+      - Key: Name
+        Value: Allow standard webservice ports
+      VpcId:
+        Ref: drgnCustomerVpc
+
+  sginternalAccess:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: internal access for Customer VPC instances
+      Tags:
+      - Key: Name
+        Value: drgnCustomerVpc Internal Access
+      VpcId:
+        Ref: drgnCustomerVpc
+
+  drgnCustomerPublicA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-west-2a
+      CidrBlock: 10.1.0.0/18
+      Tags:
+      - Key: Name
+        Value: Customer Public 1
+      VpcId:
+        Ref: drgnCustomerVpc
+
+  drgnCustomerPublicB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-west-2b
+      CidrBlock: 10.1.64.0/18
+      Tags:
+      - Key: Name
+        Value: Customer Public 2
+      VpcId:
+        Ref: drgnCustomerVpc
+
+  drgnCustomerPrivateA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-west-2a
+      CidrBlock: 10.1.128.0/18
+      Tags:
+      - Key: Name
+        Value: Customer Private 1
+      VpcId:
+        Ref: drgnCustomerVpc
+
+  drgnCustomerPrivateB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-west-2b
+      CidrBlock: 10.1.192.0/18
+      Tags:
+      - Key: Name
+        Value: Customer Private 2
+      VpcId:
+        Ref: drgnCustomerVpc
+
+  subnetRouteTblPrivateB:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: customerPrivateRouteTable
+      SubnetId:
+        Ref: drgnCustomerPrivateB
+
+  subnetRouteTblPrivateA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: customerPrivateRouteTable
+      SubnetId:
+        Ref: drgnCustomerPrivateA
+
+  subnetRouteTblPublicB:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: customerPublicRouteTable
+      SubnetId:
+        Ref: drgnCustomerPublicB
+
+  subnetRouteTblPublicA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: customerPublicRouteTable
+      SubnetId:
+        Ref: drgnCustomerPublicA
+
+  aclRule100Out:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Egress: true
+      NetworkAclId:
+        Ref: allowAllAcl
+      Protocol: -1
+      RuleAction: allow
+      RuleNumber: 100
+
+  aclRule100in:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      NetworkAclId:
+        Ref: allowAllAcl
+      Protocol: -1
+      RuleAction: allow
+      RuleNumber: 100
+
+  allowAllAcl:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+      VpcId:
+        Ref: drgnCustomerVpc
+
+  subnetAclPrivateA:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      NetworkAclId:
+        Ref: allowAllAcl
+      SubnetId:
+        Ref: drgnCustomerPrivateA
+
+  subnetAclPublicB:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      NetworkAclId:
+        Ref: allowAllAcl
+      SubnetId:
+        Ref: drgnCustomerPublicB
+
+  subnetAclPrivateB:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      NetworkAclId:
+        Ref: allowAllAcl
+      SubnetId:
+        Ref: drgnCustomerPrivateB
+
+  subnetAclPublicA:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      NetworkAclId:
+        Ref: allowAllAcl
+      SubnetId:
+        Ref: drgnCustomerPublicA
+
+  customerPrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags:
+      - Key: Name
+        Value: customer-routing-table
+      VpcId:
+        Ref: drgnCustomerVpc
+
+  customerPublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags:
+      - Key: Name
+        Value: customer-ig-routing-table
+      VpcId:
+        Ref: drgnCustomerVpc
+
+  igwRoute:
+    Type: AWS::EC2::Route
+    DependsOn: igwAttach
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: drgnCustomerIGW
+      RouteTableId:
+        Ref: customerPublicRouteTable
+
+  natRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: drgnCustomerNATGW
+      RouteTableId:
+        Ref: customerPrivateRouteTable
+
+  igwAttach:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId:
+        Ref: drgnCustomerIGW
+      VpcId:
+        Ref: drgnCustomerVpc
+
+  drgnCustomerIGW:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: customer-ig
+
+  drgnCustomerNATGW:
+    Type: AWS::EC2::NatGateway
+    Properties: 
+      AllocationId:
+        Fn::GetAtt:
+          - drgnEIP
+          - AllocationId
+      SubnetId: 
+        Ref: drgnCustomerPublicA    
+
+  drgnSSMInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles: 
+        - Ref: drgnSSMRole
+      InstanceProfileName: SsmInstanceProfile
+
+  drgnSSMRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: drgnSSMRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - Effect: "Allow"
+            Principal: 
+              Service: 
+                - "ec2.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+
+  drgnTrustMain:
+      Type: "AWS::IAM::Role"
+      Properties:
+        RoleName: drgnMainTrust
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Principal: 
+                AWS: "arn:aws:iam::381978683274:role/ecs-core-lambda-service-role"
+                Service: 
+                  - "ecs-tasks.amazonaws.com"
+              Action: 
+                - "sts:AssumeRole"
+
+  drgnTrustPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:    
+      ManagedPolicyName: drgnTrustPolicy
+      Description: "DRGN - trust policy for ecs core lambda deployment"
+      Roles:
+        - Ref: drgnTrustMain
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - budgets:*
+              - cloudformation:CreateChangeSet
+              - cloudformation:CreateStack
+              - cloudformation:CreateStackInstances
+              - cloudformation:DeleteStack
+              - cloudformation:DeleteStackInstances
+              - cloudformation:Describe*
+              - cloudformation:DescribeStackEvents
+              - cloudformation:DescribeStackInstance
+              - cloudformation:DescribeStacks
+              - cloudformation:Get*
+              - cloudformation:List*
+              - cloudformation:UpdateStack
+              - cloudformation:ValidateTemplate
+              - ec2:CreateNetworkInterface
+              - ec2:createTags
+              - ec2:DeleteNetworkInterface
+              - ec2:Describe*
+              - ec2:RunInstances
+              - ec2:StartInstances
+              - ec2:StopInstances
+              - ec2:TerminateInstances
+              - iam:AddRoleToInstanceProfile
+              - iam:AttachRolePolicy
+              - iam:CreateInstanceProfile
+              - iam:CreateRole
+              - iam:DeleteInstanceProfile 
+              - iam:DeleteRole
+              - iam:DeleteRolePolicy
+              - iam:DetachRolePolicy 
+              - iam:GetRole
+              - iam:ListRolePolicies 
+              - iam:ListRoles 
+              - iam:PassRole
+              - iam:PutRolePolicy
+              - iam:RemoveRoleFromInstanceProfile
+              - iam:UpdateRole
+              - lambda:AddPermission
+              - lambda:CreateEventSourceMapping
+              - lambda:CreateFunction
+              - lambda:DeleteEventSourceMApping
+              - lambda:DeleteFunction 
+              - lambda:Get*
+              - lambda:GetEventSourceMapping
+              - lambda:InvokeAsync
+              - lambda:InvokeFunction
+              - lambda:InvokeFunction 
+              - lambda:List*
+              - lambda:PublishVersion
+              - lambda:RemovePermission
+              - lambda:TagResource
+              - lambda:UpdateEventSourceMapping
+              - lambda:UpdateFunctionCode
+              - lambda:UpdateFunctionConfiguration
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:DeleteLogGroup
+              - logs:DescribeLogGroups
+              - logs:PutDestination
+              - logs:PutDestinationPolicy
+              - logs:PutlogEvents
+              - logs:PutRetentionPolicy
+              - s3:CreateBucket
+              - s3:DeleteBucket
+              - s3:DeleteObject
+              - s3:GetBucketLocation 
+              - s3:GetEncryptionConfiguration 
+              - s3:GetObject*
+              - s3:ListBucket
+              - s3:PutEncryptionConfiguration 
+              - s3:PutObject
+              - sns:CreateTopic
+              - sns:DeleteTopic
+              - sns:GetTopicAttributes
+              - sns:ListTopics 
+              - sns:SetTopicAttributes              
+              - sns:Subscribe
+              - sns:Unsubscribe
+            Resource: "*"
+
+  drgnBastion:
+    Type: AWS::EC2::Instance
+    Properties:
+      DisableApiTermination: false
+      ImageId: ami-a0cfeed8 # region specific
+      InstanceInitiatedShutdownBehavior: stop
+      InstanceType: t2.micro
+      IamInstanceProfile: 
+        Ref: drgnSSMInstanceProfile
+      KeyName: drgnBastionKeyPair
+      Monitoring: false
+      NetworkInterfaces:
+      - AssociatePublicIpAddress: true
+        DeleteOnTermination: true
+        Description: Primary network interface
+        DeviceIndex: '0'
+        GroupSet:
+          - Ref: sgBastionAccess
+        SubnetId: 
+          Ref: drgnCustomerPublicA
+      Tags:
+        - Key: Name
+          Value: drgnBastion  
+
+Outputs:
+  privSubA:
+    Description: 'Private Subnet A subnet ID'
+    Value:
+      Ref: drgnCustomerPrivateA
+  privSubB:
+    Description: 'Private Subnet B subnet ID'
+    Value:
+      Ref: drgnCustomerPrivateB
+  pubSubA:
+    Description: 'Public Subnet A subnet ID'
+    Value:
+      Ref: drgnCustomerPublicA
+  pubSubB:
+    Description: 'Public Subnet B subnet ID'
+    Value:
+      Ref: drgnCustomerPublicB
+  secGroupFromBastion:
+    Description: 'Security group for access from the bastion'
+    Value:
+      Ref: sgAccessFromBastion
+  secGroupToBastion:
+    Description: 'Security group into the bastion'
+    Value:
+      Ref: sgBastionAccess
+  secGroupEc2Access:
+    Description: 'Security group for ec2 access'
+    Value:
+      Ref: sgCustomerEC2Access
+  secGroupHopperMatchmaking:
+    Description: 'Security group for access to matchmaking'
+    Value:
+      Ref: sgHopperMatchmaker
+  secGroupWebservice:
+    Description: 'Security group for webservice'
+    Value:
+      Ref: sgStandardWebservice
+  secGroupInternalAccess:
+    Description: 'Security group for internal access'
+    Value:
+      Ref: sginternalAccess
+  region:
+    Value:
+      Ref: AWS::Region
+  ec2SSHcommand:
+    Description: EC2 IP address
+    Value:
+      Fn::Join:
+        - ''
+        - - ssh ec2-user@
+          - Fn::GetAtt:
+              - drgnBastion
+              - PublicIp
+          - ' -i drgnBastionKeyPair'
+          - .pem

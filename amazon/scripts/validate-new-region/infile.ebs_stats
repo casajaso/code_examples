@@ -1,0 +1,61 @@
+MidgardPuller/EBS/<region name>/<zone name>/stats EBS-STATS-ENDPOINT-PROD-<region name>-<zone name> 
+MidgardPuller/EBS/<region name>/<zone name>/stats EBS-STATS-S3-ARCHIVER-PROD-<region name>-<zone name>
+MidgardPuller/EBS/<region name>/<zone name>/stats EBS-STATS-ENDPOINT-PROD-<region name>-<zone name> 
+MidgardPuller/EBS/<region name>/<zone name>/stats EBS-STATS-S3-ARCHIVER-PROD-<region name>-<zone name>
+MidgardPuller/EBS/<region name>/<zone name>/stats EBS-STATS-ENDPOINT-PROD-<region name>-<zone name> 
+MidgardPuller/EBS/<region name>/<zone name>/stats EBS-STATS-S3-ARCHIVER-PROD-<region name>-<zone name>
+EbsDfdd/<region name>/<zone name>/Stats EBS-AZ-VHS-<zone name> 
+EbsDfdd/<region name>/<zone name>/Stats EBS-STATS-ENDPOINT-PROD-<region name>-<zone name> 
+EbsDfdd/<region name>/<zone name>/Stats EBS-VOLUME-HEALTH-<region name>-<zone name>
+EbsDfdd/<region name>/<zone name>/Stats EBS-AZ-VHS-<zone name> 
+EbsDfdd/<region name>/<zone name>/Stats EBS-STATS-ENDPOINT-PROD-<region name>-<zone name> 
+EbsDfdd/<region name>/<zone name>/Stats EBS-VOLUME-HEALTH-<region name>-<zone name>
+EbsDfdd/<region name>/<zone name>/Stats EBS-AZ-VHS-<zone name> 
+EbsDfdd/<region name>/<zone name>/Stats EBS-STATS-ENDPOINT-PROD-<region name>-<zone name> 
+EbsDfdd/<region name>/<zone name>/Stats EBS-VOLUME-HEALTH-<region name>-<zone name>
+EBSAnalytics/<region name>/<zone name> EBS-STATS-PROD-<region name>-<zone name> 	
+EBSAnalytics/<region name>/<zone name> EBS-STATS-PROD-<region name>-<zone name>
+EBSAnalytics/<region name>/<zone name> EBS-STATS-PROD-<region name>-<zone name>
+EbsStatsAggregatorService/<region name>/<zone name> EBS-STATS-AGGREGATOR-PROD-<region name>-<zone name> 	
+EbsStatsAggregatorService/<region name>/<zone name> EBS-STATS-AGGREGATOR-PROD-<region name>-<zone name>
+EbsStatsAggregatorService/<region name>/<zone name> EBS-STATS-AGGREGATOR-PROD-<region name>-<zone name> 	
+EbsStatsClassifierService/<region name>/<zone name> 
+EbsStatsClassifierService/<region name>/<zone name>
+EbsStatsClassifierService/<region name>/<zone name>
+EbsStatsDataService/ProdFabric/<region name> EBS-STATS-DATA-<region name>
+EbsStatsDataService/<region name>/<zone name> EBS-VOLUME-HEALTH-<region name>-<zone name>
+EbsStatsDataService/<region name>/<zone name> EBS-VOLUME-HEALTH-<region name>-<zone name>
+EbsStatsDataService/<region name>/<zone name> EBS-VOLUME-HEALTH-<region name>-<zone name>
+EbsStatsDruid/Coordinator/<region name>/<zone name>
+EbsStatsDruid/Coordinator/<region name>/<zone name>
+EbsStatsDruid/Coordinator/<region name>/<zone name>
+EbsStatsDruid/Indexer/<region name>/<zone name>
+EbsStatsDruid/Indexer/<region name>/<zone name>
+EbsStatsDruid/Indexer/<region name>/<zone name>
+EbsStatsDruid/Service/<region name>/<zone name>
+EbsStatsDruid/Service/<region name>/<zone name>
+EbsStatsDruid/Service/<region name>/<zone name>
+EbsStatsDruid/Storage/<region name>/<zone name>
+EbsStatsDruid/Storage/<region name>/<zone name>
+EbsStatsDruid/Storage/<region name>/<zone name>
+EbsStatsEndpointService/<region name>/<zone name> EBS-STATS-ENDPOINT-PROD-<region name>-<zone name> 	
+EbsStatsEndpointService/<region name>/<zone name> EBS-STATS-ENDPOINT-PROD-<region name>-<zone name> 	
+EbsStatsEndpointService/<region name>/<zone name> EBS-STATS-ENDPOINT-PROD-<region name>-<zone name> 	
+EbsStatsEndpointServiceLookup/<region name>/<zone name> EBS-STATS-ENDPOINT-LOOKUP-PROD-<region name>-<zone name> 	
+EbsStatsEndpointServiceLookup/<region name>/<zone name> EBS-STATS-ENDPOINT-LOOKUP-PROD-<region name>-<zone name> 	
+EbsStatsEndpointServiceLookup/<region name>/<zone name> EBS-STATS-ENDPOINT-LOOKUP-PROD-<region name>-<zone name> 	
+EbsStatsMetering/<region name>/<zone name> EBS-STATS-METERING-PROD-<region name>-<zone name>
+EbsStatsMetering/<region name>/<zone name> EBS-STATS-METERING-PROD-<region name>-<zone name>
+EbsStatsMetering/<region name>/<zone name> EBS-STATS-METERING-PROD-<region name>-<zone name>
+EbsStatsRedshiftService/<region name>/<zone name> EBS-STATS-DW-PROD-<region name>-<zone name>
+EbsStatsRedshiftService/<region name>/<zone name> EBS-STATS-DW-PROD-<region name>-<zone name>
+EbsStatsRedshiftService/<region name>/<zone name> EBS-STATS-DW-PROD-<region name>-<zone name>
+EbsStatsReporting/<region name> EBS-STATS-MAINTENANCE-PROD-<region name> 	
+EbsStatsReportingJobService/<region name> EBS-STATS-REPORTING-JOB-<region name> 	
+EbsStatsS3Archiver/<region name>/<zone name> EBS-STATS-S3-ARCHIVER-PROD-<region name>-<zone name>
+EbsStatsS3Archiver/<region name>/<zone name> EBS-STATS-S3-ARCHIVER-PROD-<region name>-<zone name>
+EbsStatsS3Archiver/<region name>/<zone name> EBS-STATS-S3-ARCHIVER-PROD-<region name>-<zone name>
+EbsStatsWebsite/<region name> EBS-STATS-WEBSITE-<region name>
+EbsVolumeHealthStatusService/<region name>/<zone name> EBS-AZ-VHS-<zone name>
+EbsVolumeHealthStatusService/<region name>/<zone name> EBS-AZ-VHS-<zone name>
+EbsVolumeHealthStatusService/<region name>/<zone name> EBS-AZ-VHS-<zone name>

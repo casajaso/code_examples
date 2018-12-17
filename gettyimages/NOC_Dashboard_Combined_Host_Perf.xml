@@ -1,0 +1,291 @@
+<!--12/2018
+    NOC Splunk dashboard to determine CPU/RAM/DISK Utilaization qfiltered by application-group
+    / application. Dynamicaly determines target host platform and modifies 
+    graphs and queries to reflect-->
+<form onunloadCancelJobs="true">
+  <label>Combined Host Performance</label>
+  <description>*NIX / Windows host performance by application-group / application</description>
+  <init>
+    <unset token="form.meta_appgroup"></unset>
+    <unset token="form.meta_app"></unset>
+    <unset token="form.host"></unset>
+    <unset token="form.is_platform_type_set"></unset>
+    <unset token="form.is_linux"></unset>
+    <unset token="form.is_windows"></unset>
+  </init>
+  <search id="base_hosts">
+    <query>index=_internal host=* meta_appgroup=* meta_app=* source=* earliest=-5m@m latest=-1m@m | dedup host | table host meta_appgroup meta_app source</query>
+  </search>
+  <fieldset submitButton="false" autoRun="true">
+    <input type="time" token="time" searchWhenChanged="true">
+      <label>Time</label>
+      <default>
+        <earliest>-60m@m</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="dropdown" token="span" searchWhenChanged="true">
+      <label>Span</label>
+      <default>5m</default>
+      <choice value="1m">1m</choice>
+      <choice value="5m">5m</choice>
+      <choice value="15m">15m</choice>
+      <choice value="30m">30m</choice>
+    </input>
+    <input type="dropdown" token="meta_appgroup" searchWhenChanged="true" depends="base_hosts">
+      <label>AppGroup</label>
+      <search base="base_hosts">
+        <query>| dedup meta_appgroup | table meta_appgroup | sort meta_appgroup</query>
+      </search>
+      <fieldForLabel>meta_appgroup</fieldForLabel>
+      <fieldForValue>meta_appgroup</fieldForValue>
+      <change>
+        <unset token="form.meta_app"></unset>
+        <unset token="form.host"></unset>
+        <unset token="form.is_platform_type_set"></unset>
+        <unset token="form.is_linux"></unset>
+        <unset token="form.is_windows"></unset>
+      </change>
+    </input>
+    <input type="dropdown" token="meta_app" searchWhenChanged="true" depends="$meta_appgroup$">
+      <label>App</label>
+      <search base="base_hosts">
+        <query>| search meta_appgroup=$meta_appgroup$ | dedup meta_app | table meta_app | sort meta_app</query>
+      </search>
+      <fieldForLabel>meta_app</fieldForLabel>
+      <fieldForValue>meta_app</fieldForValue>
+      <change>
+        <unset token="form.host"></unset>
+        <unset token="form.is_platform_type_set"></unset>
+        <unset token="form.is_linux"></unset>
+        <unset token="form.is_windows"></unset>
+      </change>
+    </input>
+    <input type="dropdown" token="host" searchWhenChanged="true" depends="$meta_app$">
+      <label>Host</label>
+      <choice value="*">All</choice>
+      <search base="base_hosts">
+        <query>| search meta_appgroup=$meta_appgroup$ meta_app=$meta_app$ | table host | sort host</query>
+      </search>
+      <fieldForLabel>host</fieldForLabel>
+      <fieldForValue>host</fieldForValue>
+      <change>
+        <unset token="form.is_platform_type_set"></unset>
+        <unset token="form.is_linux"></unset>
+        <unset token="form.is_windows"></unset>
+      </change>
+    </input>
+  </fieldset>
+  <search base="base_hosts" depends="$host$">
+    <query>| search meta_appgroup=$meta_appgroup$ meta_app=$meta_app$ host=$host$ | dedup source </query>
+    <done>
+      <eval token="is_linux">if(match($result.source$, "/opt/*"), "true", null())</eval>
+      <eval token="is_windows">if(match($result.source$, ".:\*"), "true", null())</eval>
+      <eval token="is_platform_type_set">coalesce(is_linux, is_windows)</eval>
+    </done>
+  </search>
+  <row depends="$host$, $is_platform_type_set$">
+    <panel depends="$is_linux$" rejects="$is_windows$">
+      <chart depends="$is_platform_type_set$">
+        <title>CPU Usage % (Linux)</title>
+        <search depends="$is_linux$" rejects="$is_windows$">
+          <query>index=os host=$host$ sourcetype="cpu" meta_appgroup=$meta_appgroup$ meta_app=$meta_app$ | eval pctUsed = 100 - pctIdle | timechart  span=$span$ avg(pctUsed) by host limit=0</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">false</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.axisY.maximumNumber">100</option>
+        <option name="charting.axisY.minimumNumber">0</option>
+      </chart>
+    </panel>
+    <panel depends="$is_windows$" rejects="$is_linux$">
+      <chart depends="$is_platform_type_set$">
+        <title>CPU Usage % (Windows)</title>
+        <search depends="$is_windows$" rejects="$is_linux$">
+          <query>index=os host=$host$ sourcetype="Perfmon:CPUTime" meta_appgroup=$meta_appgroup$ meta_app=$meta_app$ | timechart span=$span$ avg(PercentProcessorTime) by host limit=0</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">false</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.axisY.maximumNumber">100</option>
+        <option name="charting.axisY.minimumNumber">0</option>
+      </chart>
+    </panel>
+  </row>
+  <row depends="$host$, $is_platform_type_set$">
+    <panel depends="$is_linux$" rejects="$is_windows$">
+      <chart depends="$is_platform_type_set$">
+        <title>Memory Usage % (Linux)</title>
+        <search depends="$is_linux$" rejects="$is_windows$">
+          <query>index=os sourcetype=vmstat host=$host$ meta_appgroup=$meta_appgroup$ meta_app=$meta_app$ | multikv fields memUsedPct memFreePct | eval memUsedPct=100-memFreePct | timechart span=$span$ avg(memUsedPct) by host limit=0</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">false</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.axisY.maximumNumber">100</option>
+        <option name="charting.axisY.minimumNumber">0</option>
+      </chart>
+    </panel>
+    <panel depends="$is_windows$" rejects="$is_linux$">
+      <chart depends="$is_platform_type_set$">
+        <title>Memory Usage % (Windows)</title>
+        <search depends="$is_windows$" rejects="$is_linux$">
+          <query>index=os host=$host$ meta_appgroup=$meta_appgroup$ meta_app=$meta_app$ sourcetype="Perfmon:Memory" counter="% Committed Bytes In Use" | eval Value=round(Value) | timechart span=$span$ avg(Value) by host limit=0</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">false</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.axisY.maximumNumber">100</option>
+        <option name="charting.axisY.minimumNumber">0</option>
+      </chart>
+    </panel>
+  </row>
+  <row depends="$host$, $is_platform_type_set$">
+    <panel depends="$is_linux$" rejects="$is_windows$">
+      <chart depends="$is_platform_type_set$">
+        <title>Disk Usage % (Linux)</title>
+        <search depends="$is_linux$" rejects="$is_windows$">
+          <query>index=os host=$host$ sourcetype="df" meta_appgroup=$meta_appgroup$ meta_app=$meta_app$ | multikv | where (Type != "hsfs") AND (Type != "iso9660") AND (MountedOn != "/boot") | eval host_volume=host . "_" . Filesystem | timechart span=$span$ avg(UsePct) by host_volume limit=0</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">false</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.axisY.maximumNumber">100</option>
+        <option name="charting.axisY.minimumNumber">0</option>
+      </chart>
+    </panel>
+    <panel depends="$is_windows$" rejects="$is_linux$">
+      <chart depends="$is_platform_type_set$">
+        <title>Disk Usage % (Windows)</title>
+        <search depends="$is_windows$" rejects="$is_linux$">
+          <query>index=os sourcetype="Perfmon:LogicalDisk" counter="% Free Space" instance=*: host=$host$ meta_appgroup=$meta_appgroup$ meta_app=$meta_app$ | eval host_drive=host . "_" . instance | eval PCNT_Used = 100-Value  | timechart span=$span$ avg(PCNT_Used) by host_drive limit=0</query>
+          <earliest>$time.earliest$</earliest>
+          <latest>$time.latest$</latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">false</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.axisY.maximumNumber">100</option>
+        <option name="charting.axisY.minimumNumber">0</option>
+      </chart>
+    </panel>
+  </row>
+</form>
