@@ -58,7 +58,7 @@ def main(argv):
             sys.stdout.write('test_ids: {}\n\n'.format(test_ids))
     sys.stdout.flush()
 
-#functionalized arg parser to addargparse string check to unit test
+#functionalized arg parser to addargparse string check to unit test (placeholder for unit test)
 def get_args(argv):
     parser = argparse.ArgumentParser(description='calls catchpoint api returning sorted array of test_ids grouped by type')
     parser.add_argument('-k', '--key', nargs='?', dest='key', help=' <catchpoint REST_API KEY>')
