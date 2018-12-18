@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #ssh utility that runs specified command on remote host(s)
-#supports bastion/jumpbox and password, ssh-agent key, or identity-file authentication
+#supports bastion/jumpbox proxies as well as password, ssh-agent, and ssh identitiy file authentication.
 
 import argparse
 import sys
