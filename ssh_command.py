@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
 #usage: ssh_command.py [-h] [-c ['COMMAND' '...']] [-b [BASTIAN]] [-u [USERNAME]] [-i [IDENTITYFILE]] [-p] [hostname]
-
+#
 #run commands on remote host over ssh
-
+#
 #positional arguments:
 #  hostname              target hostname or ip (***required)
-
+#
 #optional arguments:
 #  -h, --help            show this help message and exit
 #  -c ['COMMAND' '...'], --command ['COMMAND' '...']
@@ -19,7 +19,6 @@
 #  -i [IDENTITYFILE], --identityfile [IDENTITYFILE]
 #                        use ssh identify file; opens prompt (default: None)
 #  -p, --password        use password; opens prompt (default: no flag set)
-
 
 import argparse
 import sys
