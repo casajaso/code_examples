@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#usage: ssh_command.py [-h] [-c ['COMMAND' 'COMMAND...']] [-b [BASTIAN]] [-u [USERNAME]] [-i [IDENTITYFILE]] [-p] [hostname]
+#usage: ssh_command.py [-h] [-c ['COMMAND' '...']] [-b [BASTIAN]] [-u [USERNAME]] [-i [IDENTITYFILE]] [-p] [hostname]
 
 #run commands on remote host over ssh
 
@@ -9,9 +9,9 @@
 
 #optional arguments:
 #  -h, --help            show this help message and exit
-#  -c COMMAND [COMMAND ...], --command COMMAND [COMMAND ...]
+#  -c ['COMMAND' '...'], --command ['COMMAND' '...']
 #                        command(s) to execute on target host (***required)
-#                        example: -c 'command-1' OR -c 'command-2; command-3'
+#                        example: -c 'command' '...' OR -c 'command; ...'
 #  -b [BASTIAN], --bastian [BASTIAN]
 #                        proxy through a bastion/jumpbox (default: None)
 #  -u [USERNAME], --username [USERNAME]
@@ -29,7 +29,7 @@ import getpass
 def get_args(argv): #gets vars passed via cli
     parser = argparse.ArgumentParser(description='run commands on remote host over ssh')
     parser.add_argument('hostname', nargs='?', help=' target hostname or ip (***required)')
-    parser.add_argument('-c', '--command', required=True, nargs='+', help=' command(s) to execute on target host (***required) example: -c \'command-1\' OR -c \'command-2; command-3\'')
+    parser.add_argument('-c', '--command', required=True, nargs='+', help=' command(s) to execute on target host (***required) example: -c \'command\' \'...\' OR -c \'command; ...\'')
     parser.add_argument('-b', '--bastian', nargs='?', default=None, help=' proxy through a bastion/jumpbox (default: %(default)s)')
     parser.add_argument('-u', '--username', nargs='?', default=(getpass.getuser()), help=' username on target host (default: %(default)s)')
     parser.add_argument('-i', '--identityfile', nargs='?', default=None, help=' use ssh identify file; opens prompt (default: %(default)s)')
