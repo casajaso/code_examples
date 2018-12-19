@@ -1,7 +1,25 @@
 #!/usr/bin/env python
 
-#ssh utility that runs specified command on remote host(s)
-#supports bastion/jumpbox proxies as well as password, ssh-agent, and ssh identitiy file authentication.
+#usage: ssh_command.py [-h] [-c ['COMMAND' 'COMMAND...']] [-b [BASTIAN]] [-u [USERNAME]] [-i [IDENTITYFILE]] [-p] [hostname]
+
+#run commands on remote host over ssh
+
+#positional arguments:
+#  hostname              target hostname or ip (***required)
+
+#optional arguments:
+#  -h, --help            show this help message and exit
+#  -c COMMAND [COMMAND ...], --command COMMAND [COMMAND ...]
+#                        command(s) to execute on target host (***required)
+#                        example: -c 'command-1' OR -c 'command-2; command-3'
+#  -b [BASTIAN], --bastian [BASTIAN]
+#                        proxy through a bastion/jumpbox (default: None)
+#  -u [USERNAME], --username [USERNAME]
+#                        username on target host (default: jcasas)
+#  -i [IDENTITYFILE], --identityfile [IDENTITYFILE]
+#                        use ssh identify file; opens prompt (default: None)
+#  -p, --password        use password; opens prompt (default: no flag set)
+
 
 import argparse
 import sys
