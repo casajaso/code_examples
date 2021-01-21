@@ -1,0 +1,4 @@
+boto3
+botocore
+argparse
+git+ssh://git@gitlab.nordstrom.com/public-cloud/cascadelib.git#subdirectory=cascadelib3

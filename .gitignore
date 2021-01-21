@@ -1,0 +1,12 @@
+*_temp
+*.zip
+*.pyc
+.DS_Store
+Thumbs.db
+*.log
+venv/
+.venv/
+*/*/venv/
+*/*/.venv/
+.vscode/
+blaster_logs/
