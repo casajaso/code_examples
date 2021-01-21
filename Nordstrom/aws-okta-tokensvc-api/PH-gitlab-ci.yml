@@ -1,0 +1,118 @@
+stages: # temporarly blocking pipeline for initial merge
+  - build
+  - test
+  - upload_code_nonprod
+  - upload_code_prod
+  - deploy_nonprod
+  - deploy_prod
+
+variables:
+  NP_CRED: $arnawsiam125237321655roleNORDNonProdIEPCDevUsersTeam
+  PROD_CRED: $arnawsiam028824555316roleNORDProdIEPCDevUsersTeam
+
+build:
+  rules:
+    - if: '$CI_COMMIT_REF_NAME != "master" && $CI_COMMIT_REF_NAME != "integration"'
+      changes:
+      - Dockerfile
+      - .gitlab-ci.yml
+      when: always
+    - if: '$CI_COMMIT_REF_NAME == "master" || $CI_COMMIT_REF_NAME == "integration"'
+      when: always
+    - when: on_success
+  #https://docs.gitlab.com/ee/ci/variables/
+  stage: build
+  services:
+    - name: gitlab-registry.nordstrom.com/cicd/gitlab-shared-runner/docker:dind
+      alias: docker
+  tags:
+    - docker
+  variables:
+    #USER: nonroot
+    #CI_DEBUG_TRACE: "true"
+    IMAGE_NAME: ${CI_REGISTRY_IMAGE}/go-v1.0:${CI_PROJECT_ID}
+  script:
+    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+    - docker build -t ${IMAGE_NAME} .
+    - docker push ${IMAGE_NAME}
+
+test:
+  stage: test
+  image: ${CI_REGISTRY_IMAGE}/go-v1.0:${CI_PROJECT_ID}
+  except:
+    - integration
+    - master
+  script:
+    # Compile the binary
+    - go build
+    # Execute unit tests
+    - go test
+
+upload_code_nonprod:
+  stage: upload_code_nonprod
+  image: ${CI_REGISTRY_IMAGE}/go-v1.0:${CI_PROJECT_ID}
+  only:
+    - integration
+  script:
+    - aws --version
+    - export AWS_ACCESS_KEY_ID=$(echo ${NP_CRED} | /usr/bin/jq -r '.Credentials.AccessKeyId')
+    - export AWS_SECRET_ACCESS_KEY=$(echo ${NP_CRED} | /usr/bin/jq -r '.Credentials.SecretAccessKey')
+    - export AWS_SESSION_TOKEN=$(echo ${NP_CRED} | /usr/bin/jq -r '.Credentials.SessionToken')
+    - export AWS_DEFAULT_REGION=us-west-2
+    - echo "machine gitlab.nordstrom.com login gitlab-ci-token password $CI_JOB_TOKEN" > /home/nonroot/.netrc
+    - aws s3 mv s3://aws-okta-token-service-dev s3://aws-okta-token-service-dev/delete --recursive --exclude "delete/*"
+    - go build main.go
+    - zip -Xr lambda_code.zip main
+    - aws s3 cp lambda_code.zip s3://aws-okta-token-service-dev/$CI_COMMIT_SHA.zip
+
+upload_code_prod:
+  stage: upload_code_prod
+  image: ${CI_REGISTRY_IMAGE}/go-v1.0:${CI_PROJECT_ID}
+  only:
+    - master
+  script:
+    - aws --version
+    - export AWS_ACCESS_KEY_ID=$(echo ${PROD_CRED} | /usr/bin/jq -r '.Credentials.AccessKeyId')
+    - export AWS_SECRET_ACCESS_KEY=$(echo ${PROD_CRED} | /usr/bin/jq -r '.Credentials.SecretAccessKey')
+    - export AWS_SESSION_TOKEN=$(echo ${PROD_CRED} | /usr/bin/jq -r '.Credentials.SessionToken')
+    - export AWS_DEFAULT_REGION=us-west-2
+    - echo "machine gitlab.nordstrom.com login gitlab-ci-token password $CI_JOB_TOKEN" > /home/nonroot/.netrc
+    - aws s3 mv s3://aws-okta-token-service-prod s3://aws-okta-token-service-prod/delete --recursive --exclude "delete/*"
+    - go build main.go
+    - zip -Xr lambda_code.zip main
+    - aws s3 cp lambda_code.zip s3://aws-okta-token-service-prod/$CI_COMMIT_SHA.zip
+
+
+deployDev:
+  stage: deploy_nonprod
+  only:
+    - integration
+  dependencies: ['upload_code_nonprod']
+  before_script:
+    - export AWS_ACCESS_KEY_ID=$(echo $NP_CRED | sed 's/^.*\"AccessKeyId\":\"\([a-zA-Z0-9+//]*\).*/\1/')
+    - export AWS_SECRET_ACCESS_KEY=$(echo $NP_CRED | sed 's/^.*\"SecretAccessKey\":\"\([a-zA-Z0-9+//]*\).*/\1/')
+    - export AWS_SESSION_TOKEN=$(echo $NP_CRED | sed 's/^.*\"SessionToken\":\"\([a-zA-Z0-9+//]*\).*/\1/')
+    - export AWS_DEFAULT_REGION=us-west-2
+    - echo "Deploying to Development AWS environment"
+    - environment=$(cat config.json | jq -r '.account_information .nonprod .env')
+    - cert=$(cat config.json | jq -r '.account_information .nonprod .acm_cert_arn')
+
+  script:
+    - aws cloudformation deploy --template ./cloudformation_templates/tokensrv-cft.yaml --stack-name aws-okta-tokensvc --parameter-overrides Environment=${environment} ACMCert=${cert} LambdaCodeKey=$CI_COMMIT_SHA.zip --capabilities CAPABILITY_NAMED_IAM
+
+deployProd:
+  stage: deploy_prod
+  only:
+    - master
+  dependencies: ['upload_code_prod']
+  before_script:
+    - export AWS_ACCESS_KEY_ID=$(echo $PROD_CRED | sed 's/^.*\"AccessKeyId\":\"\([a-zA-Z0-9+//]*\).*/\1/')
+    - export AWS_SECRET_ACCESS_KEY=$(echo $PROD_CRED | sed 's/^.*\"SecretAccessKey\":\"\([a-zA-Z0-9+//]*\).*/\1/')
+    - export AWS_SESSION_TOKEN=$(echo $PROD_CRED | sed 's/^.*\"SessionToken\":\"\([a-zA-Z0-9+//]*\).*/\1/')
+    - export AWS_DEFAULT_REGION=us-west-2
+    - echo "Deploying to Production AWS environment"
+    - environment=$(cat config.json | jq -r '.account_information .prod .env')
+    - cert=$(cat config.json | jq -r '.account_information .prod .acm_cert_arn')
+
+  script:
+    - aws cloudformation deploy --template ./cloudformation_templates/tokensrv-cft.yaml --stack-name aws-okta-tokensvc --parameter-overrides Environment=${environment} ACMCert=${cert} LambdaCodeKey=$CI_COMMIT_SHA.zip --capabilities CAPABILITY_NAMED_IAM

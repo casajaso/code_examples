@@ -1,0 +1,201 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Builds the aws-okta token service using an ApiGateway, GoLang lambda, and supporting services
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    Description: Enter the environment of the deployment
+  ACMCert:
+    Type: String
+    Description: ACM cert for SSL on the ApiGateway
+  LambdaCodeKey:
+    Type: String
+    Description: The key of the S3 file containing the main executable for the service
+Resources:
+  TokenSrvLogGroup:
+    DependsOn:
+      - TokenSvcLambda
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName:  !Join
+        - ''
+        - - /aws/lambda/
+          - !Ref TokenSvcLambda
+      RetentionInDays: 90
+  TokenSvcLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        S3Bucket: !Join
+          - '-'
+          - - aws-okta-token-service
+            - !Ref Environment
+        #choose a file name
+        S3Key: !Ref LambdaCodeKey
+      FunctionName: !Join
+        - '-'
+        - - !Ref AWS::StackName
+          - !Ref Environment
+          - lambda
+      Handler: main
+      MemorySize: 512
+      Role: !Join
+        - ''
+        - - 'arn:aws:iam::'
+          - !Ref AWS::AccountId
+          - ':role/aws-okta-tokensvc'
+      Runtime: go1.x
+      Timeout: 30
+  ApiGatewayRestApi:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: !Join
+        - '-'
+        - - !Ref AWS::StackName
+          - !Ref Environment
+          - restapi
+      EndpointConfiguration:
+        Types:
+          - EDGE
+  ApiGatewayResourceV2:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt
+        - ApiGatewayRestApi
+        - RootResourceId
+      PathPart: v2
+      RestApiId: !Ref ApiGatewayRestApi
+  ApiGatewayMethodV2Post:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: POST
+      RequestParameters: {}
+      ResourceId: !Ref ApiGatewayResourceV2
+      RestApiId: !Ref ApiGatewayRestApi
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Join
+          - ''
+          - - 'arn:'
+            - !Ref 'AWS::Partition'
+            - ':apigateway:'
+            - !Ref 'AWS::Region'
+            - ':lambda:path/2015-03-31/functions/'
+            - !GetAtt
+              - TokenSvcLambda
+              - Arn
+            - /invocations
+      MethodResponses: []
+  ApiGatewayDeployment:
+    Type: 'AWS::ApiGateway::Deployment'
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      StageName: !Ref Environment
+    DependsOn:
+      - ApiGatewayMethodV2Post
+  TokenSrvLambdaPermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Join
+        - ':'
+        - - !GetAtt
+            - TokenSvcLambda
+            - Arn
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join
+        - ''
+        - - 'arn:'
+          - !Ref 'AWS::Partition'
+          - ':execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref ApiGatewayRestApi
+          - /*/*
+  GatewayCustomMapping:
+    Type: 'AWS::ApiGateway::BasePathMapping'
+    DependsOn:
+      - ApiGatewayDeployment
+      - CustomDomain
+    Properties:
+      DomainName: !Ref CustomDomain
+      RestApiId: !Ref ApiGatewayRestApi
+      Stage: !Ref Environment
+  CustomDomain:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      CertificateArn: !Ref ACMCert
+      DomainName: !Join
+        - '.'
+        - - tokensvc
+          - !Ref Environment
+          - cloud.vip.nordstrom.com
+      EndpointConfiguration:
+        Types:
+          - EDGE
+      #look into TLS_1_2
+      SecurityPolicy: TLS_1_0
+  Route53ARecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      AliasTarget:
+        DNSName: !GetAtt CustomDomain.DistributionDomainName
+        HostedZoneId: !GetAtt CustomDomain.DistributionHostedZoneId
+      HostedZoneName: !Join
+        - '.'
+        - - !Ref Environment
+          - cloud.vip.nordstrom.com.
+      Name: !Join
+        - '.'
+        - - tokensvc
+          - !Ref Environment
+          - cloud.vip.nordstrom.com.
+      Type: A
+  # DomainCert:
+  #   Type: AWS::CertificateManager::Certificate
+  #   Properties:
+  #     DomainName: !Join
+  #       - '.'
+  #       - - tokensvc
+  #         - !Ref Environment
+  #         - cloud.vip.nordstrom.com
+  #     # DomainValidationOptions:
+  #     #   - DomainValidationOption
+  #     SubjectAlternativeNames:
+  #       - !Join
+  #         - '.'
+  #         - - www.tokensvc
+  #           - !Ref Environment
+  #           - cloud.vip.nordstrom.com
+Outputs:
+  TokenServiceArn:
+    Description: Current Lambda function version
+    Value: !Ref TokenSvcLambda
+  ServiceEndpoint:
+    Description: URL of the service endpoint
+    Value: !Join
+      - ''
+      - - 'https://'
+        - !Ref ApiGatewayRestApi
+        - .execute-api.
+        - !Ref 'AWS::Region'
+        - .
+        - !Ref 'AWS::URLSuffix'
+        - /
+        - !Ref Environment
+  DistributionDomainName:
+    Value: !GetAtt
+      - CustomDomain
+      - DistributionDomainName
+  DistributionHostedZoneId:
+    Value: !GetAtt
+      - CustomDomain
+      - DistributionHostedZoneId

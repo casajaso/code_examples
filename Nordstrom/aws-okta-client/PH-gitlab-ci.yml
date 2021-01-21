@@ -1,0 +1,59 @@
+stages:
+  - build
+
+variables:
+  GO_PATH: "/tmp/go"
+
+before_script:
+  - mkdir -p $GO_PATH/src
+  - mkdir -p $GO_PATH/bin
+  - mkdir -p $GO_PATH/pkg
+  - mkdir -p $CI_PROJECT_DIR/win
+  - mkdir -p $CI_PROJECT_DIR/darwin
+  - mkdir -p $CI_PROJECT_DIR/linux
+  - export GOPATH=$GO_PATH
+
+build-win:
+  stage: build
+  image: golang:1.12-stretch
+  when: on_success
+  only:
+    - master
+  before_script:
+    - make prod-endpoints
+  script:
+    - env GOOS=windows GOARCH=amd64 go build -o $CI_PROJECT_DIR/win/aws-okta
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/win/aws-okta
+
+build-darwin:
+  stage: build
+  image: golang:1.12-stretch
+  when: on_success
+  only:
+    - master
+  before_script:
+    - make prod-endpoints
+  script:
+    - env GOOS=darwin GOARCH=amd64 go build -o $CI_PROJECT_DIR/darwin/aws-okta
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/darwin/aws-okta
+
+build-linux:
+  stage: build
+  image: golang:1.12-stretch
+  when: on_success
+  only:
+    - master
+  before_script:
+    - make prod-endpoints
+  script:
+    - env GOOS=linux GOARCH=amd64 go build -o $CI_PROJECT_DIR/linux/aws-okta
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/linux/aws-okta
+
+after_script:
+  - echo "Ending $CI_JOB_STAGE stage.."

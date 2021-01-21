@@ -1,0 +1,34 @@
+# go build
+aws-okta
+aws-okta-dev
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# GoLang Sum file
+go.sum
+
+# Test binary, build with `go test -c`
+*.test
+debug
+bin
+
+# build dirs
+release/
+dist/
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Mac
+.DS_Store
+
+# VSCode
+.vscode
+
+# WIP
+bridge.go

@@ -1,0 +1,73 @@
+service: aws-okta-tokensvc-${env:VERSION, opt:version}
+
+frameworkVersion: ">=1.28.0 <2.0.0"
+
+plugins:
+  - serverless-domain-manager
+
+custom:
+  customDomain:
+    domainName: tokensvc.${env:DOMAIN_NAME, opt:domain-name}
+    basePath: ${env:VERSION, opt:version}
+    stage: ${self:provider.stage}
+    hostedZoneId: ${env:HOSTED_ZONE_ID, opt:hosted-zone-id}
+    certificateArn: ${env:ACM_CERTIFICATE_ARN, opt:acm-certificate-arn}
+    createRoute53Record: true
+    endpointType: edge
+    securityPolicy: tls_1
+
+provider:
+  name: aws
+  runtime: go1.x
+  role: lambdaRole
+  stage: ${env:ENV_NAME, opt:env-name}
+  region: us-west-2
+  memorySize: 512
+  timeout: 30
+  stackTags:
+    Name: ${self:service}
+  environment:
+    LDAP_LAMBDA: ${env:LDAP_LAMDA, opt:ldap_lambda}
+
+functions:
+  awsOktaToken:
+    name:  ${env:ENV_NAME, opt:env-name}-aws-okta-tokensvc-${env:VERSION, opt:version}
+    handler: bin/main
+    events:
+      - http:
+          path: /${env:VERSION, opt:version}
+          method: post
+package:
+  exclude:
+    - ./**
+  include:
+    - ./bin/**
+
+resources:
+  Resources:
+    lambdaRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: fff000-aws-okta-tokensvc
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: 'sts:AssumeRole'
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+          - arn:aws:iam::aws:policy/AWSLambdaFullAccess
+          - ${env:TEAM_POLICY_ARN, opt:team-policy-arn}
+        Policies:
+          - PolicyName: ${env:ENV_NAME, opt:env-name}-${self:service}-sts-policy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - sts:*
+                  Resource: '*'

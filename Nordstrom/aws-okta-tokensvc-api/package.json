@@ -1,0 +1,21 @@
+{
+  "name": "aws-okta-token-service",
+  "version": "0.0.1",
+  "description": "AWS Okta Token Service assumes an IAM Role on behalf of an authenticated Okta user and returns back AWS temporary security credentials.",
+  "author": "Cloud Engineering <cloudengineering@nordstrom.com>",
+  "private": true,
+  "contributors": [
+    "Justin Plute <Justin.Plute@nordstrom.com>",
+    "Ella Ordona <Ella.Ordona@nordstrom.com>",
+    "Jason Casas <Jason.Casas@nordstrom.com>"
+  ],
+  "devDependencies": {
+    "serverless": "^1.32.0",
+    "serverless-domain-manager": "^2.6.13"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.585.0",
+    "awssdk": "^1.0.1",
+    "sls": "^0.1.0"
+  }
+}
